@@ -1,0 +1,61 @@
+[project]
+name = "windriveinstall"
+version = "0.1.0"
+description = "Автоматический поиск, скачивание и установка драйверов из MS Update Catalog"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "beautifulsoup4>=4.15.0",
+    "pywin32>=312; platform_system == 'Windows'",
+    "requests>=2.34.2",
+    "selenium>=4.49.0",
+]
+
+[project.scripts]
+windriveinstall = "windriveinstall.__main__:main"
+windrive = "windriveinstall.__main__:main"
+wdi = "windriveinstall.__main__:main"
+
+[build-system]
+requires = ["uv_build>=0.12.12,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.7",
+    "ty>=0.0.80",
+]
+
+[tool.ruff]
+line-length = 88
+src = ["src"]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "B",
+    "UP",
+    "RUF",
+    "DOC",
+    "D",
+    "PL",
+
+]
+allowed-confusables = ["В", "с", "О"]
+fixable = ["ALL"]
+ignore = [
+    "RUF001",
+    "RUF002",
+    "RUF003",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["windriveinstall"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
