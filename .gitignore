@@ -9,5 +9,12 @@ wheels/
 # Virtual environments
 .venv
 
+Cache
 Drivers
+Output
 OEM
+node_modules
+*.log
+Template
+*.7z
+*.zip
