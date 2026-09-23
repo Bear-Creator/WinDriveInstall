@@ -1,3 +1,5 @@
+"""Поиск драйверов в каталоге обновлений Microsoft Update Catalog."""
+
 import logging
 import re
 
@@ -9,7 +11,6 @@ from .utils import get_http_session, is_newer, parse_catalog_date, version_tuple
 
 log = logging.getLogger(__name__)
 
-
 CATALOG_SEARCH_URL = "https://www.catalog.update.microsoft.com/Search.aspx"
 CATALOG_DOWNLOAD_DIALOG_URL = (
     "https://www.catalog.update.microsoft.com/DownloadDialog.aspx"
@@ -17,6 +18,7 @@ CATALOG_DOWNLOAD_DIALOG_URL = (
 GUID_RE = re.compile(
     r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
 )
+_MIN_CATALOG_TABLE_CELLS = 7
 
 
 def search_catalog(
@@ -25,8 +27,17 @@ def search_catalog(
     """Ищет обновления в каталоге по строке запроса (обычно HWID)."""
     session = session or get_http_session()
 
-    resp = session.get(CATALOG_SEARCH_URL, params={"q": query}, timeout=30)
-    resp.raise_for_status()
+    try:
+        resp = session.get(CATALOG_SEARCH_URL, params={"q": query}, timeout=30)
+        resp.raise_for_status()
+    except requests.exceptions.Timeout:
+        log.warning(
+            "Таймаут ожидания ответа от Microsoft Catalog для запроса: %s", query
+        )
+        return []
+    except requests.exceptions.RequestException as e:
+        log.error("Ошибка сети при запросе в каталог (%s): %s", query, e)
+        return []
 
     soup = BeautifulSoup(resp.text, "html.parser")
     table = soup.find("table", {"id": "ctl00_catalogBody_updateMatches"})
@@ -38,7 +49,7 @@ def search_catalog(
 
     for row in table.find_all("tr")[1:]:
         cells = row.find_all("td")
-        if len(cells) < 7:
+        if len(cells) < _MIN_CATALOG_TABLE_CELLS:
             continue
         try:
             # id строки иногда имеет вид "{GUID}_R6" (когда одно обновление
@@ -84,7 +95,7 @@ def search_catalog_with_fallback(
 def find_updates(
     devices: list[LocalDevice], session: requests.Session | None = None
 ) -> list[tuple[LocalDevice, CatalogEntry, str]]:
-    """Ищет обновления для всех устройств. Возвращает [(device, лучшая_запись, matched_hwid)]."""
+    """Ищет обновления для всех устройств: [(device, лучшая_запись, matched_hwid)]."""
     session = session or get_http_session()
     candidates = []
     for dev in devices:

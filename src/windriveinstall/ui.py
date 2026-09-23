@@ -1,3 +1,5 @@
+"""Форматированный вывод отчетов и таблиц в консоль."""
+
 from .models import CatalogEntry, DownloadResult, LocalDevice
 from .utils import truncate
 
@@ -5,6 +7,7 @@ from .utils import truncate
 def print_update_summary(
     candidates: list[tuple[LocalDevice, CatalogEntry, str]],
 ) -> None:
+    """Выводит таблицу найденных обновлений драйверов для устройств."""
     w = (3, 42, 20, 20, 12, 12)
 
     print(
@@ -29,6 +32,7 @@ def print_update_summary(
 
 
 def print_final_report(results: list[DownloadResult]) -> None:
+    """Печатает сводный отчет по статусам загрузки драйверов."""
     labels = {"ok": "OK", "manual_needed": "ПРОПУЩЕН", "failed": "ОШИБКА"}
     print("\n" + "=" * 76)
     print("ИТОГ ЗАГРУЗКИ")
